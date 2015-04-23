@@ -93,6 +93,7 @@ typedef struct HermannInstanceConfig {
 	int isConnected;
 
 	int isErrored;
+
 	char *error;
 } HermannInstanceConfig;
 

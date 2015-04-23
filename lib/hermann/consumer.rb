@@ -34,7 +34,8 @@ module Hermann
       else
         brokers   = opts.delete(:brokers)
         partition = opts.delete(:partition)
-        @internal = Hermann::Lib::Consumer.new(topic, brokers, partition)
+        offset    = opts.delete(:offset)
+        @internal = Hermann::Lib::Consumer.new(topic, brokers, partition, offset)
       end
     end
 
