@@ -824,6 +824,11 @@ static VALUE consumer_initialize(VALUE self,
 
 	if ( FIXNUM_P(offset) ) {
 		consumerConfig->start_offset = FIX2LONG(offset);
+	} else if ( SYMBOL_P(offset) ) {
+		if ( offset == ID2SYM(rb_intern("start")) )
+			consumerConfig->start_offset = RD_KAFKA_OFFSET_BEGINNING;
+		else if ( offset == ID2SYM(rb_intern("end")) )
+			consumerConfig->start_offset = RD_KAFKA_OFFSET_END;
 	} else {
 		consumerConfig->start_offset = RD_KAFKA_OFFSET_END;
 	}
