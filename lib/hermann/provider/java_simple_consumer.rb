@@ -46,6 +46,7 @@ module Hermann
         @do_retry         = options.delete(:do_retry)
         @max_retries      = options.delete(:max_retries)
         @logger           = options.delete(:logger)
+        @offset           = options.delete(:offset)
         # deleting options above so that they do not get sent to
         # the create_config method
         config            = create_config(zookeepers, groupId, options)

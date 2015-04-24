@@ -29,12 +29,17 @@ module Hermann
       @brokers = brokers
       @partition = partition
 
+      offset = opts[:offset]
+      raise "Bad offset: #{offset}" unless valid_offset?(offset)
+
       if Hermann.jruby?
         @internal = Hermann::Provider::JavaSimpleConsumer.new(zookeepers, groupId, topic, opts)
       else
         brokers   = opts.delete(:brokers)
         partition = opts.delete(:partition)
-        offset    = opts.delete(:offset)
+
+        opts.delete(:offset)
+
         @internal = Hermann::Lib::Consumer.new(topic, brokers, partition, offset)
       end
     end
@@ -51,6 +56,12 @@ module Hermann
       else
         #no op
       end
+    end
+
+    private
+
+    def valid_offset?(offset)
+      offset.nil? || offset.is_a?(Fixnum) || offset == :start || offset == :end
     end
   end
 end
