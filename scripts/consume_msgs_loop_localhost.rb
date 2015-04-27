@@ -2,7 +2,8 @@ require 'rubygems'
 require 'lib/hermann'
 require 'lib/hermann/consumer'
 
-c = Hermann::Consumer.new( "maxwell", "maxwell_consumer", "localhost:9092", offset: :start )
+c = Hermann::Consumer.new( "lms_messages", :zookeepers => "localhost:2181", :group_id => "lms_message_consumer", :offset => :start)
+
 t1 = 0
 c.consume() do
   |msg| puts("Received: #{msg}")

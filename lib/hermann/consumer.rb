@@ -10,35 +10,32 @@ module Hermann
   # Hermann::Consumer provides a simple consumer API which is only safe to be
   # executed in a single thread
   class Consumer
-    attr_reader :topic, :brokers, :partition, :internal
+    attr_reader :topic, :internal
 
 
     # Instantiate Consumer
     #
     # @params [String] kafka topic
-    #
-    # @params [String] group ID
-    #
-    # @params [String] comma separated zookeeper list
-    #
     # @params [Hash] options for Consumer
-    # @option opts [String] :brokers   (for MRI) Comma separated list of brokers
-    # @option opts [Integer] :partition (for MRI) The kafka partition
-    def initialize(topic, groupId, zookeepers, opts={})
+    # @option opts [String]  :brokers    (for MRI) Comma separated list of brokers
+    # @option opts [Integer] :partition  (for MRI) The kafka partition
+    # @option opts [Integer] :zookeepers (for jruby) list of zookeeper servers
+    # @option opts [Integer] :group_id   (for jruby) client group_id
+    #
+    def initialize(topic, opts = {})
       @topic = topic
-      @brokers = brokers
-      @partition = partition
 
       offset = opts[:offset]
       raise "Bad offset: #{offset}" unless valid_offset?(offset)
 
       if Hermann.jruby?
-        @internal = Hermann::Provider::JavaSimpleConsumer.new(zookeepers, groupId, topic, opts)
-      else
-        brokers   = opts.delete(:brokers)
-        partition = opts.delete(:partition)
+        zookeepers, group_id = require_values_at(opts, :zookeepers, :group_id)
 
+        @internal = Hermann::Provider::JavaSimpleConsumer.new(zookeepers, group_id, topic, opts)
+      else
         opts.delete(:offset)
+
+        brokers, partition = require_values_at(opts, :brokers, :partition)
 
         @internal = Hermann::Lib::Consumer.new(topic, brokers, partition, offset)
       end
@@ -62,6 +59,13 @@ module Hermann
 
     def valid_offset?(offset)
       offset.nil? || offset.is_a?(Fixnum) || offset == :start || offset == :end
+    end
+
+    def require_values_at(opts, *args)
+      args.map do |a|
+        raise "Please provide :#{a} option!" unless opts[a]
+        opts[a]
+      end
     end
   end
 end
