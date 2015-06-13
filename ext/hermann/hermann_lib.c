@@ -259,7 +259,10 @@ static void msg_consume(rd_kafka_message_t *rkmessage, HermannInstanceConfig *cf
 	// Yield the data to the Consumer's block
 	if (rb_block_given_p()) {
 		VALUE value = rb_str_new((char *)rkmessage->payload, rkmessage->len);
-		rb_yield(value);
+		VALUE key = rb_str_new((char*) rkmessage->key, (int)rkmessage->key_len);
+		VALUE offset = rb_ll2inum(rkmessage->offset);
+
+		rb_yield_values(3, value, key, offset);
 	}
 	else {
 		if (DEBUG) {
