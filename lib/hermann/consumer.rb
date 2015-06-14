@@ -55,6 +55,15 @@ module Hermann
       end
     end
 
+    def offset=(offset)
+      raise Hermann::Errors::InvalidOffsetError.new("Bad offset: #{offset}") unless valid_offset?(offset)
+      if Hermann.jruby?
+        raise "Not available in jruby version"
+      else
+        @internal.offset = offset
+      end
+    end
+
     private
 
     def valid_offset?(offset)

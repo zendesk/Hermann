@@ -824,6 +824,31 @@ static VALUE consumer_allocate(VALUE klass) {
 }
 
 /**
+ *  consumer_value_to_offset
+ *
+ *  translate a ruby-value to a rdkafka offset.  the incoming value may be:
+ *  :start, :end, or a FIXNUM
+ *
+ *  @param  offset		VALUE   the ruby offset value
+ */
+
+static int64_t consumer_value_to_offset(VALUE offset) {
+	if ( FIXNUM_P(offset) ) {
+		return FIX2LONG(offset);
+	} else if ( SYMBOL_P(offset) ) {
+		if ( offset == ID2SYM(rb_intern("start")) )
+			return RD_KAFKA_OFFSET_BEGINNING;
+		else if ( offset == ID2SYM(rb_intern("end")) )
+			return RD_KAFKA_OFFSET_END;
+		else
+			return RD_KAFKA_OFFSET_END;
+	} else {
+		return RD_KAFKA_OFFSET_END;
+	}
+}
+
+
+/**
  *  consumer_initialize
  *
  *  todo: configure the brokers through passed parameter, later through zk
@@ -860,17 +885,7 @@ static VALUE consumer_initialize(VALUE self,
 	consumerConfig->run = 1;
 	consumerConfig->exit_eof = 0;
 	consumerConfig->quiet = 0;
-
-	if ( FIXNUM_P(offset) ) {
-		consumerConfig->start_offset = FIX2LONG(offset);
-	} else if ( SYMBOL_P(offset) ) {
-		if ( offset == ID2SYM(rb_intern("start")) )
-			consumerConfig->start_offset = RD_KAFKA_OFFSET_BEGINNING;
-		else if ( offset == ID2SYM(rb_intern("end")) )
-			consumerConfig->start_offset = RD_KAFKA_OFFSET_END;
-	} else {
-		consumerConfig->start_offset = RD_KAFKA_OFFSET_END;
-	}
+	consumerConfig->start_offset = consumer_value_to_offset(offset);
 
 	return self;
 }
@@ -905,6 +920,24 @@ static VALUE consumer_init_copy(VALUE copy,
 
 	return copy;
 }
+
+/**
+ * Hermann::Lib::Consumer.offset =
+ *
+ * @param		VALUE		self 		the Ruby object for this consumer
+ * @param		VALUE		offset	one of (:start, :end, FIXNUM)
+ */
+
+static VALUE consumer_set_offset(VALUE self, VALUE offset) {
+	HermannInstanceConfig* consumerConfig;
+
+	Data_Get_Struct(self, HermannInstanceConfig, consumerConfig);
+
+	consumerConfig->start_offset = consumer_value_to_offset(offset);
+
+	return offset;
+}
+
 
 /**
  *  producer_free
@@ -1065,6 +1098,8 @@ void Init_hermann_lib() {
 
 	/* Consumer has method 'consume' */
 	rb_define_method( c_consumer, "consume", consumer_consume, 1);
+
+	rb_define_method( c_consumer, "offset=", consumer_set_offset, 1);
 
 	/* ---- Define the producer class ---- */
 	c_producer = rb_define_class_under(lib_module, "Producer", rb_cObject);
