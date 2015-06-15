@@ -473,6 +473,7 @@ static VALUE consumer_consume(VALUE self, VALUE topic) {
 		return Qnil;
 	}
 
+	consumerConfig->run = 1;
 	return rb_ensure(consumer_consume_loop, self, consumer_consume_loop_stop, self);
 }
 
@@ -1038,7 +1039,6 @@ static VALUE consumer_initialize(VALUE self,
 	consumerConfig->topic = strdup(topicPtr);
 	consumerConfig->brokers = strdup(brokersPtr);
 	consumerConfig->partition = partitionNo;
-	consumerConfig->run = 1;
 	consumerConfig->exit_eof = 0;
 	consumerConfig->quiet = 0;
 	consumerConfig->start_offset = consumer_value_to_offset(offset);
