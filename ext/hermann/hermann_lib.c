@@ -983,7 +983,14 @@ static VALUE consumer_allocate(VALUE klass) {
 
 static int64_t consumer_value_to_offset(VALUE offset) {
 	if ( FIXNUM_P(offset) ) {
-		return FIX2LONG(offset);
+		int64_t off64 = FIX2LONG(offset);
+
+		/* treat negative numbers as "distance from the end of the stream" */
+		if ( off64 < 0 )
+		  return RD_KAFKA_OFFSET_TAIL(off64 * -1);
+		else
+		  return off64;
+
 	} else if ( SYMBOL_P(offset) ) {
 		if ( offset == ID2SYM(rb_intern("start")) )
 			return RD_KAFKA_OFFSET_BEGINNING;
