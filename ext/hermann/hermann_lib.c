@@ -1024,12 +1024,14 @@ static int64_t consumer_value_to_offset(VALUE offset) {
  *  @param  brokers	 VALUE   a Ruby string containing list of host:port
  *  @param  partition   VALUE   a Ruby number
  *  @param  offset      VALUE   a Ruby number
+ *  @param  exit_eof    VALUE   boolean, do we return from #consume on end-of-stream?
  */
 static VALUE consumer_initialize(VALUE self,
 								 VALUE topic,
 								 VALUE brokers,
 								 VALUE partition,
-								 VALUE offset) {
+								 VALUE offset,
+								 VALUE exit_eof) {
 
 	HermannInstanceConfig* consumerConfig;
 	char* topicPtr;
@@ -1046,7 +1048,7 @@ static VALUE consumer_initialize(VALUE self,
 	consumerConfig->topic = strdup(topicPtr);
 	consumerConfig->brokers = strdup(brokersPtr);
 	consumerConfig->partition = partitionNo;
-	consumerConfig->exit_eof = 0;
+	consumerConfig->exit_eof = RTEST(exit_eof);
 	consumerConfig->quiet = 0;
 	consumerConfig->start_offset = consumer_value_to_offset(offset);
 
@@ -1256,7 +1258,7 @@ void Init_hermann_lib() {
 	rb_define_alloc_func(c_consumer, consumer_allocate);
 
 	/* Initialize */
-	rb_define_method(c_consumer, "initialize", consumer_initialize, 4);
+	rb_define_method(c_consumer, "initialize", consumer_initialize, 5);
 	rb_define_method(c_consumer, "initialize_copy", consumer_init_copy, 1);
 
 	/* Consumer has method 'consume' */

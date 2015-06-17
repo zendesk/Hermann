@@ -28,6 +28,8 @@ module Hermann
       @topic = topic
 
       offset = opts.delete(:offset)
+      exit_on_eof = opts.delete(:exit_on_eof) # default false
+
       raise Hermann::Errors::InvalidOffsetError.new("Bad offset: #{offset}") unless valid_offset?(offset)
 
       if Hermann.jruby?
@@ -37,7 +39,7 @@ module Hermann
       else
         brokers, partition = require_values_at(opts, :brokers, :partition)
 
-        @internal = Hermann::Lib::Consumer.new(topic, brokers, partition, offset)
+        @internal = Hermann::Lib::Consumer.new(topic, brokers, partition, offset, exit_on_eof)
       end
     end
 

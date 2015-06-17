@@ -9,11 +9,10 @@ require 'hermann/consumer'
 i = 0
 
 #c = Hermann::Consumer.new( "maxwell", brokers: "localhost:9092", partition: i, offset: -1)
-c = Hermann::Consumer.new( "maxwell", brokers: "localhost:9092", partition: i, offset: -1)
+c = Hermann::Consumer.new( "maxwell", brokers: "localhost:9092", partition: i, offset: -1, exit_on_eof: true)
 
 c.consume() do |msg, key, offset|
   puts "%s %s %d" % [msg, key, offset]
-  break
 end
 
 c.offset = :start
