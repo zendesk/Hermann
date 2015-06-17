@@ -12,8 +12,8 @@ module Hermann
       Topic     = Struct.new(:name, :partitions)
 
       Partition = Struct.new(:id, :leader, :replicas, :insync_replicas, :topic_name) do
-        def consumer(offset=:end)
-          Hermann::Consumer.new(topic_name, brokers: ([leader] + replicas).join(','), partition: id, offset: offset)
+        def consumer(offset=:end, exit_on_eof=false)
+          Hermann::Consumer.new(topic_name, brokers: ([leader] + replicas).join(','), partition: id, offset: offset, exit_on_eof: exit_on_eof)
         end
       end
 
